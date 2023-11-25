@@ -95,12 +95,14 @@ defmodule Cocktail.ScheduleState do
   defp apply_exception_time([], _), do: {false, []}
   defp apply_exception_time(exceptions, nil), do: {false, exceptions}
 
-  defp apply_exception_time([next_exception | rest] = exceptions, current_time) do
-    if Timex.compare(next_exception, current_time) == 0 do
-      {true, rest}
-    else
-      {false, exceptions}
-    end
+  defp apply_exception_time(exceptions, current_time) do
+    Enum.reduce(exceptions, {false, []}, fn exception, {is_exception, remaining_exceptions} ->
+      if !is_exception && Timex.compare(exception, current_time) == 0 do
+        {true, remaining_exceptions}
+      else
+        {is_exception, [exception | remaining_exceptions]}
+      end
+    end)
   end
 
   @spec next_occurrence_and_state(Cocktail.time(), [RuleState.t()], [Cocktail.time()], [Cocktail.time()], t) ::

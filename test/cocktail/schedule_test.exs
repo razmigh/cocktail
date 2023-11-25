@@ -70,6 +70,19 @@ defmodule Cocktail.ScheduleTest do
     assert times == [~N[2017-09-09 09:00:00]]
   end
 
+  test "exception times when next one is not in schedule" do
+    schedule =
+      ~N[2017-09-09 09:00:00]
+      |> Schedule.new()
+      |> Schedule.add_recurrence_rule(:daily)
+      |> Schedule.add_exception_time(~N[2017-09-10 08:00:00])
+      |> Schedule.add_exception_time(~N[2017-09-10 09:00:00])
+
+    times = schedule |> Schedule.occurrences() |> Enum.take(2)
+
+    assert times == [~N[2017-09-09 09:00:00], ~N[2017-09-11 09:00:00]]
+  end
+
   test "occurrences at the end of the day won't cause an infinite loop" do
     assert [%{from: ~N[2021-10-15 23:00:00], until: ~N[2021-10-15 23:30:00]}] =
              ~N[2021-10-15 23:00:00]
